@@ -1,0 +1,32 @@
+
+uint16_t pot_value = 0;
+uint8_t potValueH = 0, potValueL = 0;
+
+void setup() {
+
+  Serial.begin(9600);
+  ADCSRA |= (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0);   // Prescaler:128
+  ADMUX  |= (1 << MUX1) | (1 << MUX0);                    //3. analog channel activated (A3)
+  ADMUX  |= (1 << REFS0);                                 // Reference
+  ADMUX  |= (1 << ADLAR);                                 // adjusted left
+  DIDR0  |= (1 << ADC3D);                                 // ADC pin is disabled for digital input
+  ADCSRA |= (1 << ADEN);                                  //  ADC active
+
+}
+void loop() {
+
+  ADCSRA |= (1 << ADSC);    // Start conversation
+
+  while (ADCSRA & (1 << ADSC))
+  {
+    potValueL = (ADCL | (0 << ADCL));
+    potValueH = (ADCH | (0 << ADCH));
+  }
+  Serial.print("8 bit value: ");
+  Serial.print(potValueH);
+  potValueL = potValueL >> 6;
+  pot_value = potValueH << 2;
+  pot_value = (pot_value | potValueL);
+  Serial.print("\t \t 10 bit value: ");
+  Serial.println(pot_value);
+}
